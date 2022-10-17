@@ -2,15 +2,14 @@
 
 /*
     CREATE TABLE sessions(
-   id VARCHAR(255) UNIQUE NOT NULL,
-   payload TEXT,
-created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        id VARCHAR(255) UNIQUE NOT NULL,
+        payload TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
  */
 
-ini_set('session.auto_start.gc_maxlifetime', 10);
-ini_set('extension','php_pdo_mysql.dll');
+date_default_timezone_set('Asia/Seoul');
 
 /**
  * Session Handler Interface
@@ -65,6 +64,7 @@ class DatabaseSessionHandler implements SessionHandlerInterface
         if ($sth->execute()) {
             while ($row = $sth->fetchObject()) {
                 $timestamp = strtotime($row->created_at);
+
                 if (time() - $timestamp > $max_lifetime) {
                     $this->destroy($row->id);
                 }
@@ -83,10 +83,10 @@ class DatabaseSessionHandler implements SessionHandlerInterface
     }
 }
 
+// 세션 핸들러 등록
 session_set_save_handler(new DatabaseSessionHandler(new PDO('mysql:dbname=test;host=127.0.0.1;', 'root', 'root')));
 session_start();
+$_SESSION['message'] = 'Hello world';
+$_SESSION['foo'] = new stdClass();
 
-//$_SESSION['message'] = 'Hello world';
-//$_SESSION['foo'] = new stdClass();
-
-session_gc();
+session_gc(); // 세션 정리
